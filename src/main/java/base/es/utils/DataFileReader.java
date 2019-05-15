@@ -1,4 +1,4 @@
-package base.es;
+package base.es.utils;
 
 import base.es.model.Company;
 

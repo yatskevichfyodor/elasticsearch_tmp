@@ -10,8 +10,10 @@ import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
+import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchAllQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
+import org.elasticsearch.index.query.SimpleQueryStringBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
@@ -37,8 +39,6 @@ public class CompanyService {
 
     public void indexConpany(Company company) {
         Map<String, Object> jsonMap = new HashMap<>();
-//        jsonMap.put("user", "galantis");
-//        jsonMap.put("postDate", new Date());
 
         jsonMap.put("name", company.getName());
         jsonMap.put("address", company.getAddress());
@@ -69,9 +69,24 @@ public class CompanyService {
         try {
             SearchRequest request = new SearchRequest("companies");
 
-            SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
 
-            sourceBuilder.query(new MatchQueryBuilder("name", query));
+//            BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
+//            for (String field: new String[]{"name", "address", "phone", "email", "site", "section", "industry"}) {
+//                queryBuilder.should(new MatchQueryBuilder(field, query));
+//            }
+
+//            MatchQueryBuilder queryBuilder = new MatchQueryBuilder("name", query);
+
+            SimpleQueryStringBuilder queryBuilder = new SimpleQueryStringBuilder(query);
+            Map<String, Float> fieldsToSearchMap = new HashMap<>();
+            fieldsToSearchMap.put("name", 3F);
+            fieldsToSearchMap.put("email", 2F);
+            fieldsToSearchMap.put("site", 1F);
+            queryBuilder.fields(fieldsToSearchMap);
+
+            SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+            sourceBuilder.query(queryBuilder);
+            sourceBuilder.size(100);
 
             request.source(sourceBuilder);
 
