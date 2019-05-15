@@ -1,0 +1,84 @@
+<!DOCTYPE HTML>
+
+<html>
+<head>
+    <meta charset="utf-8"/>
+
+    <title >Elasticsearch</title>
+
+    <script src="/webjars/jquery/3.2.0/jquery.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+
+<h6>enter only 1 word for search</h6>
+<input>
+<button onclick="search()">search</button>
+
+<table style="width:100%;border: 1px solid black;" id="responseData">
+    <caption>response</caption>
+    <tr>
+        <th>name</th>
+        <th>address</th>
+        <th>phone</th>
+        <th>email</th>
+        <th>section</th>
+        <th>industry</th>
+    </tr>
+</table>
+
+<script>
+
+
+
+    function search() {
+        var query = $("input").val();
+
+        $.ajax({
+            url: "/searchCompanies?query=" + query,
+            dataType: 'json',
+            cache: false,
+            timeout: 60000,
+            success: function (result) {
+                renderResults(result);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(thrownError);
+            }
+        });
+    }
+
+    function renderResults(data) {
+        $("#responseData").empty();
+
+
+        var htmlData = "\n" +
+            "    <caption>response</caption>\n" +
+            "    <tr>\n" +
+            "        <th>name</th>\n" +
+            "        <th>address</th>\n" +
+            "        <th>phone</th>\n" +
+            "        <th>email</th>\n" +
+            "        <th>section</th>\n" +
+            "        <th>industry</th>\n" +
+            "    </tr>";
+        data.forEach( function (row) {
+            htmlData += '<tr>';
+
+            htmlData += '<td>' + row['name'] + '</td>';
+            htmlData += '<td>' + row['address'] + '</td>';
+            htmlData += '<td>' + row['phone'] + '</td>';
+            htmlData += '<td>' + row['email'] + '</td>';
+            htmlData += '<td>' + row['site'] + '</td>';
+            htmlData += '<td>' + row['section'] + '</td>';
+            htmlData += '<td>' + row['industry'] + '</td>';
+
+            htmlData += '</tr>';
+        });
+
+        $("#responseData").html(htmlData);
+    }
+</script>
+
+</body>
+</html>
