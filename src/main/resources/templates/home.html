@@ -24,8 +24,14 @@
 <body>
 
 <h6>enter only 1 word for search</h6>
-<input>
-<button onclick="search()">search</button>
+<input id="searchByAnyField">
+<button onclick="search()" style="margin-right:50px">search</button>
+
+<input id="searchByEmailField">
+<button onclick="searchByDuplicatedEmails()" style="margin-right:50px">searchByDuplicatedEmails</button>
+
+<input id="searchByAddressField">
+<button onclick="searchByDuplicatedAddresses()" style="margin-right:50px">searchByDuplicatedAddresses</button>
 
 <table style="width:100%;border: 1px solid black;" id="responseData">
     <caption>response</caption>
@@ -41,14 +47,59 @@
 </table>
 
 <script>
-
-
-
     function search() {
-        var query = $("input").val();
+        var query = $("#searchByAnyField").val();
 
         $.ajax({
-            url: "/searchCompanies?query=" + query,
+            url: "/search?query=" + query,
+            dataType: 'json',
+            cache: false,
+            timeout: 60000,
+            success: function (result) {
+                renderResults(result);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(thrownError);
+            }
+        });
+    }
+
+    function searchByDuplicatedEmails() {
+        searchByDuplicatedEmailsStart();
+    }
+
+    function searchByDuplicatedAddresses() {
+        searchByDuplicatedAddressesStart();
+    }
+
+    // $("#searchByEmailField").keypress(function() {
+    //     searchByDuplicatedEmailsStart();
+    // });
+
+    function searchByDuplicatedEmailsStart() {
+        var query = $("#searchByEmailField").val();
+        query = query.trim();
+
+        $.ajax({
+            url: "/searchCompaniesWithDuplicatedEmails?query=" + query,
+            dataType: 'json',
+            cache: false,
+            timeout: 60000,
+            success: function (result) {
+                renderResults(result);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(thrownError);
+            }
+        });
+    }
+
+    function searchByDuplicatedAddressesStart() {
+        var query = $("#searchByAddressField").val();
+        query = query.trim();
+
+        $.ajax({
+            url: "/searchCompaniesWithDuplicatedAddresses?query=" + query,
             dataType: 'json',
             cache: false,
             timeout: 60000,

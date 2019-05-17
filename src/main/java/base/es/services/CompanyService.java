@@ -1,6 +1,7 @@
 package base.es.services;
 
 import base.es.model.Company;
+import base.es.utils.Map2EntityConverter;
 import org.apache.http.HttpHost;
 import org.elasticsearch.ElasticsearchException;
 import org.elasticsearch.action.index.IndexRequest;
@@ -13,9 +14,18 @@ import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
 import org.elasticsearch.index.query.MatchAllQueryBuilder;
 import org.elasticsearch.index.query.MatchQueryBuilder;
+import org.elasticsearch.index.query.PrefixQueryBuilder;
+import org.elasticsearch.index.query.QueryBuilder;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.index.query.SimpleQueryStringBuilder;
+import org.elasticsearch.index.query.TermQueryBuilder;
 import org.elasticsearch.rest.RestStatus;
 import org.elasticsearch.search.SearchHit;
+import org.elasticsearch.search.aggregations.Aggregation;
+import org.elasticsearch.search.aggregations.AggregationBuilders;
+import org.elasticsearch.search.aggregations.Aggregations;
+import org.elasticsearch.search.aggregations.bucket.terms.ParsedStringTerms;
+import org.elasticsearch.search.aggregations.metrics.ParsedTopHits;
 import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.stereotype.Service;
 
@@ -69,14 +79,6 @@ public class CompanyService {
         try {
             SearchRequest request = new SearchRequest("companies");
 
-
-//            BoolQueryBuilder queryBuilder = new BoolQueryBuilder();
-//            for (String field: new String[]{"name", "address", "phone", "email", "site", "section", "industry"}) {
-//                queryBuilder.should(new MatchQueryBuilder(field, query));
-//            }
-
-//            MatchQueryBuilder queryBuilder = new MatchQueryBuilder("name", query);
-
             SimpleQueryStringBuilder queryBuilder = new SimpleQueryStringBuilder(query);
             Map<String, Float> fieldsToSearchMap = new HashMap<>();
             fieldsToSearchMap.put("name", 3F);
@@ -97,16 +99,8 @@ public class CompanyService {
 
             for (SearchHit searchHit: searchHits) {
                 Map companyData = searchHit.getSourceAsMap();
-                Company company = new Company();
-                company.setName((String)companyData.get("name"));
-                company.setAddress((String)companyData.get("address"));
-                company.setPhone((String)companyData.get("phone"));
-                company.setEmail((String)companyData.get("email"));
-                company.setSite((String)companyData.get("site"));
-                company.setSection((String)companyData.get("section"));
-                company.setIndustry((String)companyData.get("industry"));
 
-                results.add(company);
+                results.add(Map2EntityConverter.convertMap2Entity(companyData));
             }
 
         } catch (Exception e) {
@@ -116,4 +110,83 @@ public class CompanyService {
         return results;
     }
 
+    public static List<String> findDuplicatedEmails() {
+        List<String> emails = new ArrayList<>();
+
+        SearchResponse searchResponse = null;
+        try {
+            SearchRequest request = new SearchRequest("companies");
+
+            SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+            sourceBuilder.size(100);
+            sourceBuilder.aggregation(AggregationBuilders.terms("by_email")
+                    .field("email")
+                    .minDocCount(2)
+            );
+
+            request.source(sourceBuilder);
+
+            searchResponse = client.search(request, RequestOptions.DEFAULT);
+
+            ParsedStringTerms agg = searchResponse.getAggregations().get("by_email");
+            List buckets = agg.getBuckets();
+
+            for (Object bucket: buckets) {
+                ParsedStringTerms.ParsedBucket b = (ParsedStringTerms.ParsedBucket)bucket;
+                emails.add((String)b.getKey());
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return emails;
+    }
+
+    public List<Company> searchDuplicatedCompaniesByFieldAndPrefix(String field, String prefix) {
+        List<Company> results = new ArrayList<>();
+
+        SearchResponse searchResponse = null;
+        try {
+            SearchRequest request = new SearchRequest("companies");
+
+            QueryBuilder queryBuilder = new PrefixQueryBuilder(field, prefix);
+
+            SearchSourceBuilder sourceBuilder = new SearchSourceBuilder();
+            sourceBuilder.query(queryBuilder);
+            sourceBuilder.size(100);
+            sourceBuilder.aggregation(AggregationBuilders.terms("by_" + field)
+                            .field(field)
+//                    .minDocCount(2)
+                            .subAggregation(AggregationBuilders.topHits("companies_duplicates")
+                                    .sort(field)
+                                    .size(100)
+                            )
+            );
+
+            request.source(sourceBuilder);
+
+            searchResponse = client.search(request, RequestOptions.DEFAULT);
+
+            ParsedStringTerms agg = searchResponse.getAggregations().get("by_" + field);
+            List buckets = agg.getBuckets();
+
+
+            for (Object bucket: buckets) {
+                ParsedStringTerms.ParsedBucket b = (ParsedStringTerms.ParsedBucket)bucket;
+                ParsedTopHits topHits = b.getAggregations().get("companies_duplicates");
+                SearchHit[] aggregationHits = topHits.getHits().getHits();
+
+                for (SearchHit searchHit : aggregationHits) {
+                    Map companyData = searchHit.getSourceAsMap();
+
+                    results.add(Map2EntityConverter.convertMap2Entity(companyData));
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return results;
+    }
 }

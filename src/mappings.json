@@ -1,0 +1,121 @@
+curl -X PUT "localhost:9200/companies?pretty" -H 'Content-Type: application/json' -d'
+{
+  "settings": {
+    "analysis": {
+      "filter": {
+        "my_address_stop": {
+          "type": "stop",
+          "stopwords": [
+            "страна",
+            "город",
+            "улица",
+            "проспект",
+            "район",
+            "квартал",
+            "дом",
+            "корпус",
+            "литера",
+            "г",
+            "ул",
+            "пр",
+            "рн",
+            "кв",
+            "к",
+            "л"
+          ]
+        }
+      },
+      "analyzer": {
+        "my_email_analyzer": {
+          "type": "custom",
+          "tokenizer": "uax_url_email",
+          "filter": [
+            "lowercase",
+            "stop"
+          ]
+        },
+        "my_address_analyzer": {
+          "type": "custom",
+          "tokenizer": "standard",
+          "filter": [
+            "lowercase",
+            "stop",
+            "my_address_stop"
+          ]
+        }
+      }
+    }
+  },
+  "mappings": {
+    "properties": {
+      "address": {
+        "type": "text",
+        "fielddata": "true",
+        "analyzer": "my_address_analyzer",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "email": {
+        "type": "text",
+        "fielddata": "true",
+        "analyzer": "my_email_analyzer",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "industry": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "name": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "phone": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "section": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "site": {
+        "type": "text",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      }
+    }
+  }
+}
+'
