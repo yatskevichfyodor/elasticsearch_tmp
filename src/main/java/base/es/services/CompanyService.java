@@ -1,6 +1,7 @@
 package base.es.services;
 
 import base.es.model.Company;
+import base.es.utils.CollectionUtils;
 import base.es.utils.Map2EntityConverter;
 import org.apache.http.HttpHost;
 import org.elasticsearch.ElasticsearchException;
@@ -12,8 +13,6 @@ import org.elasticsearch.client.RequestOptions;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
 import org.elasticsearch.index.query.BoolQueryBuilder;
-import org.elasticsearch.index.query.MatchAllQueryBuilder;
-import org.elasticsearch.index.query.MatchQueryBuilder;
 import org.elasticsearch.index.query.PrefixQueryBuilder;
 import org.elasticsearch.index.query.QueryBuilder;
 import org.elasticsearch.index.query.QueryBuilders;
@@ -31,6 +30,7 @@ import org.springframework.stereotype.Service;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -186,6 +186,35 @@ public class CompanyService {
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+        return results;
+    }
+
+    /** Идет {criteria.size()} поисковых запросов на поиск дубликатов по 1 полю
+     *  потом сдери этих результатов ищутся общие и возвращаются
+     */
+    public List<Company> searchDuplicatedCompaniesByComplicatedCriteria(List<Map<String, String>> criteria) {
+        List<Company> results = new ArrayList<>();
+
+        List<List<Company>> aggregationsResults = new ArrayList<>();
+        SearchResponse searchResponse = null;
+        try {
+            for (Map<String, String> cr : criteria) {
+                String fieldname = cr.get("fieldname");
+                String value = cr.get("value");
+                if (value == null) {
+                    value = "";
+                }
+                aggregationsResults.add(searchDuplicatedCompaniesByFieldAndPrefix(fieldname, value));
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        results = CollectionUtils.intersection(aggregationsResults);
+
+//        results.sort(Comparator.comparing(Company::getEmail).thenComparing(Company::getSite));
 
         return results;
     }

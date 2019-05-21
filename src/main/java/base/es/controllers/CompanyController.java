@@ -18,6 +18,8 @@ import org.elasticsearch.search.builder.SearchSourceBuilder;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
@@ -124,6 +126,30 @@ public class CompanyController {
         List<Company> companies = companyService.searchDuplicatedCompaniesByFieldAndPrefix("address", query);
 
         System.out.println("- searchCompaniesWithDuplicatedAddresses method finished");
+
+        return companies;
+    }
+
+    @GetMapping("/searchCompaniesWithDuplicatedFields")
+    @ResponseBody
+    public List<Company> searchCompaniesWithDuplicatedFields(@RequestParam String query, @RequestParam String fieldname) {
+        System.out.println("- searchCompaniesWithDuplicatedFields method started");
+
+        List<Company> companies = companyService.searchDuplicatedCompaniesByFieldAndPrefix(fieldname, query);
+
+        System.out.println("- searchCompaniesWithDuplicatedFields method finished");
+
+        return companies;
+    }
+
+    @PostMapping("/search")
+    @ResponseBody
+    public List<Company> search(@RequestBody List<Map<String, String>> criteria) {
+        System.out.println("- search method started");
+
+        List<Company> companies = companyService.searchDuplicatedCompaniesByComplicatedCriteria(criteria);
+
+        System.out.println("- search method finished");
 
         return companies;
     }
