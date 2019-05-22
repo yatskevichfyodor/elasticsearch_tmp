@@ -23,9 +23,9 @@
 
 <body>
 
-<input id="emailInput">
-<input type="checkbox" id="emailCheckbox">
-<button onclick="searchByDuplicatedFields('email')">searchByDuplicatedEmails</button>
+<input id="nameInput">
+<input type="checkbox" id="nameCheckbox">
+<button onclick="searchByDuplicatedFields('name')">searchByDuplicatedNames</button>
 <div style="margin-right:50px"></div>
 
 <input id="addressInput">
@@ -38,13 +38,30 @@
 <button onclick="searchByDuplicatedFields('phone')">searchByDuplicatedPhones</button>
 <div style="margin-right:50px"></div>
 
+<input id="emailInput">
+<input type="checkbox" id="emailCheckbox">
+<button onclick="searchByDuplicatedFields('email')">searchByDuplicatedEmails</button>
+<div style="margin-right:50px"></div>
+
 <input id="siteInput">
 <input type="checkbox" id="siteCheckbox">
 <button onclick="searchByDuplicatedFields('site')">searchByDuplicatedSites</button>
 <div style="margin-right:50px"></div>
+
+<input id="sectionInput">
+<input type="checkbox" id="sectionCheckbox">
+<button onclick="searchByDuplicatedFields('section')">searchByDuplicatedSections</button>
+<div style="margin-right:50px"></div>
+
+<input id="industryInput">
+<input type="checkbox" id="industryCheckbox">
+<button onclick="searchByDuplicatedFields('industry')">searchByDuplicatedIndustries</button>
+<div style="margin-right:50px"></div>
 </br>
 
 <button onclick="search()" style="margin-right:50px">SEARCH!</button>
+
+<h5 id="resultsNumber"></h5>
 
 <table style="width:100%;border: 1px solid black;" id="responseData">
     <caption>response</caption>
@@ -63,7 +80,7 @@
     function search() {
         var searchCriteriaInfo = [];
 
-        ['email', 'address', 'phone', 'site'].forEach( function(fieldname) {
+        ['name', 'address', 'phone', 'email', 'site', 'section', 'industry'].forEach( function(fieldname) {
             if ($('#' + fieldname + 'Checkbox').is(":checked")) {
                 var inputValue = $('#' + fieldname + 'Input').val();
                 searchCriteriaInfo.push({
@@ -119,6 +136,8 @@
     }
 
     function renderResults(data) {
+        $("#resultsNumber").html(data.length + " results:");
+
         $("#responseData").empty();
 
 

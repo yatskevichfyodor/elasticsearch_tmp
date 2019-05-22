@@ -147,7 +147,7 @@ public class CompanyController {
     public List<Company> search(@RequestBody List<Map<String, String>> criteria) {
         System.out.println("- search method started");
 
-        List<Company> companies = companyService.searchDuplicatedCompaniesByComplicatedCriteria(criteria);
+        List<Company> companies = companyService.searchDuplicatedCompaniesByComplicatedCriteria1(criteria);
 
         System.out.println("- search method finished");
 
