@@ -1,10 +1,15 @@
 package base.es.model;
 
-public class MergedCompany {
+import lombok.Data;
+
+@Data
+public class Contractor {
     private String INN;
     private String KPP;
+    private String phone;
 
     private String code1;
+    private String name;
     private String nameWorking;
     private String nameByDocuments;
     private String legalAddress;
@@ -16,6 +21,5 @@ public class MergedCompany {
     private String ownershipType;
     private String fullName;
     private String address;
-    private String phone;
     private String holding;
 }

@@ -1,0 +1,174 @@
+<!DOCTYPE HTML>
+
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="utf-8"/>
+
+    <title>Elasticsearch</title>
+
+    <style type="text/css" media="screen">
+
+        table {
+            border-collapse: collapse;
+            border: 1px solid #000000;
+        }
+
+        table td {
+            border: 1px solid #000000;
+        }
+    </style>
+
+    <link rel="stylesheet" type="text/css" href="/webjars/bootstrap/4.0.0-beta-1/css/bootstrap.min.css"/>
+    <script src="/webjars/jquery/3.2.0/jquery.min.js" type="text/javascript"></script>
+    <script th:src="@{  /popper.min.js}" type="text/javascript"></script>
+    <script src="/webjars/bootstrap/4.0.0-beta-1/js/bootstrap.min.js" type="text/javascript"></script>
+</head>
+
+<body>
+
+<div id="buttonsArea"></div>
+
+<button onclick="search()" style="margin-right:50px">SEARCH!</button>
+
+<h5 id="resultsNumber"></h5>
+
+
+
+<table style="width:100%;border: 1px solid black;" id="responseData">
+    <caption>response</caption>
+    <tr id="tableHeader">
+    </tr>
+</table>
+
+<script>
+    var entityClass = 'contractor';
+    var entityFieldsArray = [
+        'INN',
+        'KPP',
+        'phone',
+        'code1',
+        'code2',
+        'name',
+        'nameWorking',
+        'nameByDocuments',
+        'shortName',
+        'fullName',
+        'address',
+        'legalAddress',
+        'actualAddress',
+        'ownershipType',
+        'mainBankAccount',
+        'holding'
+    ];
+
+    $(document).ready(function () {
+
+        var buttonsHtml = '';
+        entityFieldsArray.map( function (fieldname) {
+            buttonsHtml += '' +
+                    '<input id="' + fieldname +'Input">\n' +
+                    '<input type="checkbox" id="' + fieldname + 'Checkbox">\n' +
+                    '<button onclick="searchByDuplicatedFields(\'' + fieldname + '\')">search by ' + fieldname + 'field</button>\n' +
+                    '<div style="margin-right:50px"></div>\n' +
+                    '' +
+                    '';
+        });
+        $("#buttonsArea").html(buttonsHtml);
+
+
+        var tableHeaderHtml = '';
+        entityFieldsArray.map( function (fieldname) {
+            tableHeaderHtml += '<th>' + fieldname + '</th>';
+        });
+        $("#tableHeader").html(tableHeaderHtml);
+    });
+
+    function search() {
+        var searchCriteriaInfo = [];
+
+        entityFieldsArray.forEach( function(fieldname) {
+            if ($('#' + fieldname + 'Checkbox').is(":checked")) {
+                var inputValue = $('#' + fieldname + 'Input').val();
+                searchCriteriaInfo.push({
+                    fieldname: fieldname,
+                    value: inputValue === "" ? null : inputValue
+                });
+            }
+        });
+
+        $.ajax({
+            url: '/' + entityClass + "/search",
+            type: 'post',
+            contentType: 'application/json; charset=utf-8',
+            data: JSON.stringify(searchCriteriaInfo),
+            dataType: 'json',
+            cache: false,
+            timeout: 60000,
+            success: function (result) {
+                renderResults(result);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(thrownError);
+            }
+        });
+    }
+
+    function searchByDuplicatedFields(fieldname) {
+        searchByDuplicatedFieldsStart(fieldname);
+    }
+
+    function searchByDuplicatedFieldsStart(fieldname) {
+        var query = $("#" + fieldname + 'Input').val();
+        if (query !== undefined && query !== null) {
+            query = query.trim();
+        }
+
+        $.ajax({
+            url: '/' + entityClass + "/searchDuplicatesByFieldAndPrefix",
+            data: {
+                fieldname: fieldname,
+                query: query
+            },
+            dataType: 'json',
+            cache: false,
+            timeout: 60000,
+            success: function (result) {
+                renderResults(result);
+            },
+            error: function (xhr, ajaxOptions, thrownError) {
+                console.log(thrownError);
+            }
+        });
+    }
+
+    function renderResults(data) {
+        $("#resultsNumber").html(data.length + " results:");
+
+        $("#responseData").empty();
+
+
+        var htmlData = "\n" +
+            "    <caption>response</caption>\n" +
+            "    <tr>\n";
+        entityFieldsArray.map( function (fieldname) {
+            htmlData += '<th>' + fieldname + '</th>';
+        });
+        htmlData += "</tr>";
+
+        data.forEach(function (row) {
+            htmlData += '<tr>';
+
+            entityFieldsArray.map( function (fieldname) {
+                htmlData += '<td>' + (row[fieldname] === null || row[fieldname] === undefined ? '' : row[fieldname]) + '</td>';
+            });
+
+            htmlData += '</tr>';
+        });
+
+        $("#responseData").html(htmlData);
+    }
+
+</script>
+
+</body>
+</html>

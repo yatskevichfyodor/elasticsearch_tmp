@@ -1,0 +1,109 @@
+//curl -X DELETE "localhost:9200/contractors?pretty";
+//
+curl -X PUT "localhost:9200/contractors?pretty" -H 'Content-Type: application/json' -d'
+{
+  "mappings": {
+    "properties": {
+      "INN": {
+        "type": "text",
+        "fielddata": "true",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "KPP": {
+        "type": "text",
+        "fielddata": "true",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "actualAddress": {
+        "type": "text",
+        "fielddata": "true",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "code1": {
+        "type": "text",
+        "fielddata": "true",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "legalAddress": {
+        "type": "text",
+        "fielddata": "true",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "mainBankAccount": {
+        "type": "text",
+        "fielddata": "true",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "name": {
+        "type": "text",
+        "fielddata": "true",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "nameByDocuments": {
+        "type": "text",
+        "fielddata": "true",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "nameWorking": {
+        "type": "text",
+        "fielddata": "true",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      },
+      "phone": {
+        "type": "text",
+        "fielddata": "true",
+        "fields": {
+          "keyword": {
+            "type": "keyword",
+            "ignore_above": 256
+          }
+        }
+      }
+    }
+  }
+}

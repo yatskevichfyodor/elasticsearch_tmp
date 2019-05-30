@@ -1,8 +1,8 @@
 package base.es.controllers;
 
-import base.es.model.Company;
+import base.es.model.Contractor;
+import base.es.services.ContractorService;
 import base.es.utils.DataFileReader;
-import base.es.services.CompanyService;
 import org.apache.http.HttpHost;
 import org.elasticsearch.client.RestClient;
 import org.elasticsearch.client.RestHighLevelClient;
@@ -22,11 +22,11 @@ import java.util.Map;
 import static org.springframework.http.HttpStatus.OK;
 
 @Controller
-@RequestMapping("/company")
-public class CompanyController {
+@RequestMapping("/contractor")
+public class ContractorController {
 
     @Autowired
-    CompanyService companyService;
+    ContractorService contractorService;
 
     private static RestHighLevelClient client = new RestHighLevelClient(
             RestClient.builder(
@@ -36,34 +36,41 @@ public class CompanyController {
 
     @GetMapping("/table")
     public String table() {
-        return "companies";
+        return "contractors";
     }
 
     @GetMapping("/load")
     @ResponseStatus(OK)
     public void load() {
-        List<Company> companies = null;
+        List<Contractor> contractors1 = null;
+        List<Contractor> contractors2 = null;
         try {
-            companies = DataFileReader.importCompanies("C:\\Users\\fyatskevich\\Desktop\\2019_05_14_MDM\\input_data.txt");
+            contractors1 = DataFileReader.importContractors1("C:\\Users\\fyatskevich\\Desktop\\2019_05_14_MDM\\contractors_data\\contractors1.txt");
+            contractors2 = DataFileReader.importContractors1("C:\\Users\\fyatskevich\\Desktop\\2019_05_14_MDM\\contractors_data\\contractors2.txt");
 
-            for (Company company: companies) {
-                companyService.index(company);
+
+            for (Contractor contractor: contractors1) {
+                contractorService.index(contractor);
+            }
+
+            for (Contractor contractor: contractors2) {
+                contractorService.index(contractor);
             }
         } catch(Exception e) {
             e.printStackTrace();
         }
     }
 
-    @PostMapping("/search")
+    @PostMapping("/searchDuplicates")
     @ResponseBody
-    public List<Company> search(@RequestBody List<Map<String, String>> criteria) {
-         return companyService.searchDuplicatedCompaniesByComplicatedCriteria1(criteria);
+    public List<Contractor> search(@RequestBody List<Map<String, String>> criteria) {
+        return contractorService.searchDuplicates(criteria);
     }
 
     @GetMapping("/searchDuplicatesByFieldAndPrefix")
     @ResponseBody
-    public List<Company> searchDuplicatesByFieldAndPrefix(@RequestParam String query, @RequestParam String fieldname) {
-        return companyService.searchDuplicatesByFieldAndPrefix(fieldname, query);
+    public List<Contractor> searchDuplicatesByFieldAndPrefix(@RequestParam String query, @RequestParam String fieldname) {
+        return contractorService.searchDuplicatesByFieldAndPrefix(fieldname, query);
     }
 
 }
